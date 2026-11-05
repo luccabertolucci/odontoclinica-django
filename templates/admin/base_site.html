@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | OdontoClínica{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/custom.css' %}">
+{% endblock %}
+
+{% block branding %}
+  <div id="site-name">
+    <img src="{% static 'admin/logo.png' %}" alt="OdontoClínica" class="brand-logo">
+    <a href="{% url 'admin:index' %}">OdontoClínica · Administração</a>
+  </div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
