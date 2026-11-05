@@ -20,7 +20,7 @@ class PeriodoFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         agora = timezone.now()
         if self.value() == "hoje":
-            return queryset.filter(data_hora__date=agora.date())
+            return queryset.filter(data_hora__date=timezone.localdate())
         if self.value() == "7":
             return queryset.filter(
                 data_hora__gte=agora, data_hora__lte=agora + timedelta(days=7)

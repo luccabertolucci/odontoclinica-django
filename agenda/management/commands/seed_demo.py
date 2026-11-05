@@ -66,7 +66,7 @@ class Command(BaseCommand):
             )
             pac.append(obj)
 
-        agora = timezone.now().replace(minute=0, second=0, microsecond=0)
+        agora = timezone.localtime().replace(minute=0, second=0, microsecond=0)
         consultas = [
             (pac[0], "Dra. Beatriz Souza", agora.replace(hour=9), "CONFIRMADA", 250.00),
             (pac[1], "Dr. Rafael Lima", agora.replace(hour=10), "AGENDADA", 180.00),

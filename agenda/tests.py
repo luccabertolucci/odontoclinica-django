@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from django.test import RequestFactory, TestCase
 from django.utils import timezone
@@ -17,24 +17,30 @@ class PeriodoFilterTests(TestCase):
         self.paciente = Paciente.objects.create(
             nome="Maria", cpf="111.222.333-44", data_nascimento="1990-05-10"
         )
-        self.agora = timezone.now()
+        hoje = timezone.localdate()
         self.hoje = Consulta.objects.create(
-            paciente=self.paciente, dentista=self.dentista, data_hora=self.agora
+            paciente=self.paciente,
+            dentista=self.dentista,
+            data_hora=timezone.make_aware(datetime.combine(hoje, time(12, 0))),
         )
         self.futuro = Consulta.objects.create(
             paciente=self.paciente,
             dentista=self.dentista,
-            data_hora=self.agora + timedelta(days=3),
+            data_hora=timezone.make_aware(
+                datetime.combine(hoje + timedelta(days=3), time(12, 0))
+            ),
         )
         self.passado = Consulta.objects.create(
             paciente=self.paciente,
             dentista=self.dentista,
-            data_hora=self.agora - timedelta(days=20),
+            data_hora=timezone.make_aware(
+                datetime.combine(hoje - timedelta(days=20), time(12, 0))
+            ),
         )
 
     def _aplicar(self, valor):
         request = RequestFactory().get("/", {"periodo": valor})
-        filtro = PeriodoFilter(request, {"periodo": valor}, Consulta, None)
+        filtro = PeriodoFilter(request, request.GET.copy(), Consulta, None)
         return filtro.queryset(request, Consulta.objects.all())
 
     def test_hoje(self):
