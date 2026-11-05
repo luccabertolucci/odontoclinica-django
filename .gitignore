@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+/.venv/
+/venv/
+
+# Django
+/django.sqlite3
+/db.sqlite3
+/staticfiles/
+
+# Ambiente
+.env*
+!.env.example
+
+# Apresentação (não versionada)
+/apresentacao/
+
+# Diversos
+.DS_Store
+*.pem
