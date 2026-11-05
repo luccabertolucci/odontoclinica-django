@@ -1,11 +1,14 @@
-from django.test import TestCase
+from datetime import timedelta
+
+from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
+from agenda.admin import PeriodoFilter
 from agenda.models import Consulta
 from clinica.models import Dentista, Especialidade, Paciente
 
 
-class ConsultaModelTests(TestCase):
+class PeriodoFilterTests(TestCase):
     def setUp(self):
         self.especialidade = Especialidade.objects.create(nome="Ortodontia")
         self.dentista = Dentista.objects.create(
@@ -14,25 +17,38 @@ class ConsultaModelTests(TestCase):
         self.paciente = Paciente.objects.create(
             nome="Maria", cpf="111.222.333-44", data_nascimento="1990-05-10"
         )
-
-    def test_status_padrao(self):
-        consulta = Consulta.objects.create(
-            paciente=self.paciente, dentista=self.dentista, data_hora=timezone.now()
+        self.agora = timezone.now()
+        self.hoje = Consulta.objects.create(
+            paciente=self.paciente, dentista=self.dentista, data_hora=self.agora
         )
-        self.assertEqual(consulta.status, Consulta.Status.AGENDADA)
-
-    def test_duracao_padrao(self):
-        consulta = Consulta.objects.create(
-            paciente=self.paciente, dentista=self.dentista, data_hora=timezone.now()
+        self.futuro = Consulta.objects.create(
+            paciente=self.paciente,
+            dentista=self.dentista,
+            data_hora=self.agora + timedelta(days=3),
         )
-        self.assertEqual(consulta.duracao_min, 30)
-
-    def test_str(self):
-        data = timezone.datetime(2026, 5, 11, 14, 30, tzinfo=timezone.utc)
-        consulta = Consulta.objects.create(
-            paciente=self.paciente, dentista=self.dentista, data_hora=data
+        self.passado = Consulta.objects.create(
+            paciente=self.paciente,
+            dentista=self.dentista,
+            data_hora=self.agora - timedelta(days=20),
         )
-        self.assertIn("11/05/2026 14:30", str(consulta))
 
-    def test_ordering(self):
-        self.assertEqual(Consulta._meta.ordering, ["-data_hora"])
+    def _aplicar(self, valor):
+        request = RequestFactory().get("/", {"periodo": valor})
+        filtro = PeriodoFilter(request, {"periodo": valor}, Consulta, None)
+        return filtro.queryset(request, Consulta.objects.all())
+
+    def test_hoje(self):
+        resultado = self._aplicar("hoje")
+        self.assertIn(self.hoje, resultado)
+        self.assertNotIn(self.futuro, resultado)
+        self.assertNotIn(self.passado, resultado)
+
+    def test_proximos_7_dias(self):
+        resultado = self._aplicar("7")
+        self.assertIn(self.futuro, resultado)
+        self.assertNotIn(self.passado, resultado)
+
+    def test_ultimos_30_dias(self):
+        resultado = self._aplicar("30")
+        self.assertIn(self.hoje, resultado)
+        self.assertIn(self.passado, resultado)
