@@ -18,6 +18,7 @@ ALLOWED_HOSTS = [
 ]
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -72,6 +73,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -86,3 +88,17 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 SECURE_HSTS_PRELOAD = not DEBUG
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
+
+JAZZMIN_SETTINGS = {
+    "site_title": "OdontoClínica · Administração",
+    "site_header": "OdontoClínica",
+    "site_brand": "OdontoClínica",
+    "site_logo": "admin/logo.png",
+    "welcome_sign": "Bem-vindo ao painel administrativo",
+    "copyright": "OdontoClínica",
+    "show_theme_chooser": True,
+    "theme": "flatly",
+    "dark_mode_theme": "darkly",
+    "show_ui_builder": False,
+    "search_model": ["agenda.consulta", "clinica.paciente", "clinica.dentista"],
+}
