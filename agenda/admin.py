@@ -7,7 +7,7 @@ from .models import Consulta
 
 
 class PeriodoFilter(admin.SimpleListFilter):
-    title = "período"
+    title = "Período"
     parameter_name = "periodo"
 
     def lookups(self, request, model_admin):
