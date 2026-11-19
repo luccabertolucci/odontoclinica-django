@@ -1,5 +1,5 @@
 import calendar
-from datetime import timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
@@ -19,6 +19,21 @@ from .forms import (
     PacienteForm,
 )
 from .models import Consulta
+
+NOMES_MESES = (
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+)
 
 
 @login_required(login_url="login")
@@ -92,6 +107,55 @@ def agendamentos(request):
     else:
         form = ConsultaForm()
 
+    hoje = timezone.localdate()
+    try:
+        ano = int(request.GET.get("ano", hoje.year))
+        mes = int(request.GET.get("mes", hoje.month))
+        if not 1900 <= ano <= 9998:
+            raise ValueError("Ano fora do intervalo permitido.")
+        primeiro_dia = date(ano, mes, 1)
+    except (TypeError, ValueError):
+        primeiro_dia = hoje.replace(day=1)
+
+    mes_anterior = (primeiro_dia - timedelta(days=1)).replace(day=1)
+    proximo_mes = (primeiro_dia + timedelta(days=32)).replace(day=1)
+
+    consultas_mes = (
+        Consulta.objects.select_related("paciente", "dentista")
+        .filter(
+            data_hora__gte=timezone.make_aware(
+                datetime.combine(primeiro_dia, time.min)
+            ),
+            data_hora__lt=timezone.make_aware(
+                datetime.combine(proximo_mes, time.min)
+            ),
+        )
+        .order_by("data_hora")
+    )
+    consultas_por_dia = {}
+    for consulta in consultas_mes:
+        dia = timezone.localtime(consulta.data_hora).day
+        consultas_por_dia.setdefault(dia, []).append(consulta)
+
+    semanas = []
+    for semana in calendar.Calendar(firstweekday=calendar.MONDAY).monthdayscalendar(
+        primeiro_dia.year, primeiro_dia.month
+    ):
+        celulas = []
+        for dia in semana:
+            celulas.append(
+                {
+                    "dia": dia,
+                    "consultas": consultas_por_dia.get(dia, []) if dia else [],
+                    "hoje": (
+                        dia == hoje.day
+                        and primeiro_dia.month == hoje.month
+                        and primeiro_dia.year == hoje.year
+                    ),
+                }
+            )
+        semanas.append(celulas)
+
     proximas_consultas = (
         Consulta.objects.select_related("paciente", "dentista")
         .filter(
@@ -105,7 +169,22 @@ def agendamentos(request):
         "agenda/agendamentos.html",
         {
             "form": form,
-            "hoje": timezone.localdate(),
+            "hoje": hoje,
+            "semanas": semanas,
+            "dias_semana": (
+                "Segunda",
+                "Terça",
+                "Quarta",
+                "Quinta",
+                "Sexta",
+                "Sábado",
+                "Domingo",
+            ),
+            "mes_anterior": mes_anterior,
+            "proximo_mes": proximo_mes,
+            "mes_selecionado": primeiro_dia,
+            "mes_label": f"{NOMES_MESES[primeiro_dia.month - 1]} de {primeiro_dia.year}",
+            "total_consultas_mes": consultas_mes.count(),
             "proximas_consultas": proximas_consultas,
             "pacientes_ativos": Paciente.objects.filter(ativo=True).count(),
             "dentistas_ativos": Dentista.objects.filter(ativo=True).count(),

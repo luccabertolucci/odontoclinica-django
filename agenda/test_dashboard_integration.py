@@ -203,6 +203,56 @@ class UserFacingAppointmentTests(TestCase):
         self.assertEqual(Consulta.objects.count(), 1)
         self.assertContains(response, "já possui uma consulta nesse intervalo")
 
+    def test_calendar_groups_all_month_appointments_by_day(self):
+        first_appointment = timezone.make_aware(datetime(2026, 3, 5, 9, 0))
+        second_appointment = timezone.make_aware(datetime(2026, 3, 5, 11, 30))
+        outside_month = timezone.make_aware(datetime(2026, 4, 2, 10, 0))
+        Consulta.objects.create(
+            paciente=self.patient,
+            dentista=self.dentist,
+            data_hora=first_appointment,
+            duracao_min=30,
+            status=Consulta.Status.AGENDADA,
+        )
+        Consulta.objects.create(
+            paciente=self.patient,
+            dentista=self.dentist,
+            data_hora=second_appointment,
+            duracao_min=30,
+            status=Consulta.Status.CANCELADA,
+        )
+        Consulta.objects.create(
+            paciente=self.patient,
+            dentista=self.dentist,
+            data_hora=outside_month,
+            duracao_min=30,
+        )
+
+        response = self.client.get(
+            reverse("agendamentos"),
+            {"mes": "3", "ano": "2026"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Março de 2026")
+        self.assertContains(response, "09:00")
+        self.assertContains(response, "11:30")
+        self.assertContains(response, "Agendada")
+        self.assertContains(response, "Cancelada")
+        self.assertNotContains(response, "10:00")
+        self.assertEqual(response.context["total_consultas_mes"], 2)
+
+    def test_calendar_navigation_links_neighboring_months(self):
+        response = self.client.get(
+            reverse("agendamentos"),
+            {"mes": "1", "ano": "2026"},
+        )
+
+        self.assertContains(response, 'href="?mes=12&amp;ano=2025#calendario"')
+        self.assertContains(response, 'href="?mes=2&amp;ano=2026#calendario"')
+        self.assertContains(response, 'aria-label="Mês anterior"')
+        self.assertContains(response, 'aria-label="Próximo mês"')
+
     def test_portal_login_page_is_separate_from_admin_login(self):
         self.client.logout()
 

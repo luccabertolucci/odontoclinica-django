@@ -66,6 +66,7 @@ python manage.py setup_roles    # cria grupos e permissões
 
 - Autenticação por usuário e senha.
 - Cadastro de agendamentos pelo portal da clínica, sem precisar acessar o Django Admin.
+- Calendário mensal navegável com todos os agendamentos agrupados por dia e identificados por status.
 - Bloqueio de consultas sobrepostas para o mesmo dentista, tanto no portal/Admin quanto diretamente no SQLite; horários adjacentes e consultas canceladas não bloqueiam novos horários.
 - Administração Django disponível somente para usuários staff/superusuários.
 - Cadastro de pacientes, dentistas, especialidades e convênios pelo portal, sem precisar acessar o Django Admin.

@@ -20,9 +20,10 @@
     <section class="page-heading">
       <div>
         <p class="eyebrow">AGENDA DA CLÍNICA</p>
-        <h1>Novo agendamento</h1>
-        <p class="subtitle">Organize os atendimentos da clínica em um só lugar.</p>
+        <h1>Agenda</h1>
+        <p class="subtitle">Consulte os atendimentos organizados por mês e dia.</p>
       </div>
+      <a class="calendar-today-link" href="?mes={{ hoje.month }}&amp;ano={{ hoje.year }}#calendario">Hoje</a>
     </section>
 
     {% if messages %}
@@ -30,6 +31,47 @@
         {% for message in messages %}<p class="appointment-message {{ message.tags }}">{{ message }}</p>{% endfor %}
       </div>
     {% endif %}
+
+    <section class="appointment-card calendar-card" id="calendario" aria-labelledby="calendar-title">
+      <div class="calendar-heading">
+        <div>
+          <p class="eyebrow">VISÃO MENSAL</p>
+          <h2 id="calendar-title">{{ mes_label }}</h2>
+          <p>{{ total_consultas_mes }} consulta{{ total_consultas_mes|pluralize }} no mês</p>
+        </div>
+        <nav class="calendar-navigation" aria-label="Navegar entre meses">
+          <a href="?mes={{ mes_anterior.month }}&amp;ano={{ mes_anterior.year }}#calendario" aria-label="Mês anterior">‹</a>
+          <a href="?mes={{ proximo_mes.month }}&amp;ano={{ proximo_mes.year }}#calendario" aria-label="Próximo mês">›</a>
+        </nav>
+      </div>
+      <div class="calendar-scroll">
+        <div class="calendar-grid" role="grid" aria-labelledby="calendar-title">
+          {% for nome_dia in dias_semana %}
+            <div class="calendar-weekday" role="columnheader">{{ nome_dia }}</div>
+          {% endfor %}
+          {% for semana in semanas %}
+            {% for celula in semana %}
+              <div class="calendar-day{% if not celula.dia %} calendar-day-empty{% endif %}{% if celula.hoje %} calendar-day-today{% endif %}" role="gridcell">
+                {% if celula.dia %}
+                  <span class="calendar-day-number">{{ celula.dia }}</span>
+                  <div class="calendar-events">
+                    {% for consulta in celula.consultas %}
+                      <article class="calendar-event status-{{ consulta.status|lower }}" title="{{ consulta.data_hora|date:'H:i' }} · {{ consulta.paciente.nome }} · {{ consulta.dentista.nome }}">
+                        <time datetime="{{ consulta.data_hora|date:'c' }}">{{ consulta.data_hora|date:"H:i" }}</time>
+                        <strong>{{ consulta.paciente.nome }}</strong>
+                        <span>{{ consulta.dentista.nome }}</span>
+                        <small>{{ consulta.get_status_display }}</small>
+                      </article>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+      <p class="calendar-help">Os horários são exibidos no fuso local da clínica. Use as setas para consultar outros meses.</p>
+    </section>
 
     <div class="appointment-layout">
       <section class="appointment-card">
