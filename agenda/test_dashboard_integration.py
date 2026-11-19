@@ -174,6 +174,35 @@ class UserFacingAppointmentTests(TestCase):
         self.assertEqual(consulta.valor, Decimal("250.00"))
         self.assertEqual(consulta.duracao_min, 45)
 
+    def test_portal_rejects_overlapping_appointment_for_same_dentist(self):
+        scheduled_at = timezone.localtime(timezone.now() + timedelta(days=1)).replace(
+            minute=0, second=0, microsecond=0
+        )
+        Consulta.objects.create(
+            paciente=self.patient,
+            dentista=self.dentist,
+            data_hora=scheduled_at,
+            duracao_min=60,
+        )
+
+        response = self.client.post(
+            reverse("agendamentos"),
+            {
+                "paciente": self.patient.pk,
+                "dentista": self.dentist.pk,
+                "data_hora": (scheduled_at + timedelta(minutes=30)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "duracao_min": 30,
+                "valor": "250.00",
+                "observacoes": "Deve ser rejeitada",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Consulta.objects.count(), 1)
+        self.assertContains(response, "já possui uma consulta nesse intervalo")
+
     def test_portal_login_page_is_separate_from_admin_login(self):
         self.client.logout()
 
