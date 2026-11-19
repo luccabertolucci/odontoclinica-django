@@ -51,6 +51,7 @@ python manage.py runserver
 ```
 
 - **Ambiente administrativo:** http://127.0.0.1:8000/admin/
+- **Dashboard:** http://127.0.0.1:8000/ (após entrar, com usuário do sistema)
 - Credenciais de demonstração (apenas desenvolvimento): usuário `admin`, senha `admin123`.
 
 Comandos auxiliares:
@@ -68,6 +69,21 @@ python manage.py setup_roles    # cria grupos e permissões
 - Ambiente administrativo com tema claro/escuro (Jazzmin), templates e CSS personalizados.
 - Filtros no admin: por status, dentista, data, período (filtro customizado) e busca por nome/CPF.
 - Grupos de perfil: Administrador, Dentista e Atendente.
+- Dashboard com visões operacional e financeira, gráficos de consultas, status, horários e faturamento.
+
+### Dashboards
+
+A página inicial exige autenticação e reúne dois painéis selecionáveis no topo: **Visão geral** e **Financeiro**. A visão geral resume consultas do mês, status, horários mais procurados, pacientes recorrentes e próximo atendimento. O painel financeiro apresenta valores realizados e previstos com base no campo `valor` das consultas, além do ticket médio e das faixas horárias de maior faturamento. Como o sistema ainda não registra pagamentos nem despesas, os valores representam consultas com status **Realizada** ou valores previstos em consultas **Agendadas/Confirmadas**; não representam fluxo de caixa ou lucro.
+
+### Testes de integração
+
+Com o ambiente virtual ativado e as dependências instaladas, execute os testes de cadastro do dashboard com:
+
+```powershell
+python manage.py test agenda.test_dashboard_integration
+```
+
+Os cenários cadastram pacientes e consultas pelo formulário real do Django Admin e verificam os indicadores operacionais e financeiros retornados pelo dashboard.
 
 ## Estrutura do projeto
 
