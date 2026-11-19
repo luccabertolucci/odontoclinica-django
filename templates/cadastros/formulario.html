@@ -1,0 +1,63 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ titulo }} · OdontoClínica</title>
+  <link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'dashboard/appointments.css' %}">
+</head>
+<body>
+  {% include "dashboard/_sidebar.html" with active_page=active_page %}
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumb">Cadastros <span>/</span> {{ titulo }}</div>
+      <div class="top-actions"><span class="today">◷ &nbsp;{{ hoje|date:"d/m/Y" }}</span></div>
+    </header>
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">CADASTRO DA CLÍNICA</p>
+        <h1>{{ titulo }}</h1>
+        <p class="subtitle">{{ descricao }}</p>
+      </div>
+    </section>
+
+    {% if messages %}
+      <div class="appointment-messages" role="status">
+        {% for message in messages %}<p class="appointment-message {{ message.tags }}">{{ message }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <section class="appointment-card registration-card">
+      <div class="appointment-card-heading">
+        <div class="appointment-icon">＋</div>
+        <div><h2>Informações do cadastro</h2><p>Preencha os campos abaixo e salve para adicionar ao sistema.</p></div>
+      </div>
+      <form method="post" class="appointment-fields registration-fields" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% for field in form %}
+          <div class="appointment-field{% if field.field.widget.input_type == 'checkbox' %} checkbox-field{% endif %}{% if field.name == 'descricao' %} appointment-field-wide{% endif %}">
+            {% if field.field.widget.input_type == "checkbox" %}
+              <label class="checkbox-label" for="{{ field.id_for_label }}">{{ field }}<span>{{ field.label }}</span></label>
+            {% else %}
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            {% endif %}
+            {% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}
+            {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+        {% endfor %}
+        <div class="appointment-form-actions appointment-field-wide">
+          <a class="registration-cancel" href="{% url 'dashboard' %}">Voltar ao dashboard</a>
+          <button class="primary-button" type="submit"><span>✓</span> Salvar cadastro</button>
+        </div>
+      </form>
+    </section>
+    <footer>OdontoClínica <span>·</span> Gestão simples para cuidar melhor.</footer>
+  </main>
+</body>
+</html>

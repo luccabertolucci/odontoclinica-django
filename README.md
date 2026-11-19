@@ -50,7 +50,9 @@ A OdontoClínica permite o cadastro e a gestão de pacientes, dentistas, especia
 python manage.py runserver
 ```
 
-- **Ambiente administrativo:** http://127.0.0.1:8000/admin/
+- **Portal da clínica:** http://127.0.0.1:8000/ (após entrar com sua conta)
+- **Cadastros:** use os atalhos de Pacientes, Dentistas, Convênios e Especialidades no menu lateral.
+- **Administração:** http://127.0.0.1:8000/admin/ (somente para usuários staff)
 - Credenciais de demonstração (apenas desenvolvimento): usuário `admin`, senha `admin123`.
 
 Comandos auxiliares:
@@ -63,11 +65,27 @@ python manage.py setup_roles    # cria grupos e permissões
 ## Principais funcionalidades
 
 - Autenticação por usuário e senha.
-- CRUD completo de **Consultas** no ambiente administrativo.
-- Cadastro de pacientes, dentistas, especialidades e convênios.
+- Cadastro de agendamentos pelo portal da clínica, sem precisar acessar o Django Admin.
+- Administração Django disponível somente para usuários staff/superusuários.
+- Cadastro de pacientes, dentistas, especialidades e convênios pelo portal, sem precisar acessar o Django Admin.
 - Ambiente administrativo com tema claro/escuro (Jazzmin), templates e CSS personalizados.
 - Filtros no admin: por status, dentista, data, período (filtro customizado) e busca por nome/CPF.
 - Grupos de perfil: Administrador, Dentista e Atendente.
+- Dashboard com visões operacional e financeira, gráficos de consultas, status, horários e faturamento.
+
+### Dashboards
+
+A página inicial exige autenticação e reúne dois painéis selecionáveis no topo: **Visão geral** e **Financeiro**. As páginas **Agendamentos**, **Pacientes**, **Dentistas**, **Convênios** e **Especialidades**, acessíveis pelo menu lateral, permitem incluir registros diretamente no portal. A visão geral resume consultas do mês, status, horários mais procurados, pacientes recorrentes e próximo atendimento. O painel financeiro apresenta valores realizados e previstos com base no campo `valor` das consultas, além do ticket médio e das faixas horárias de maior faturamento. Como o sistema ainda não registra pagamentos nem despesas, os valores representam consultas com status **Realizada** ou valores previstos em consultas **Agendadas/Confirmadas**; não representam fluxo de caixa ou lucro. O link para Administração aparece no menu lateral apenas para usuários staff; os demais usuários usam o portal.
+
+### Testes de integração
+
+Com o ambiente virtual ativado e as dependências instaladas, execute os testes de cadastro do dashboard com:
+
+```powershell
+python manage.py test agenda.test_dashboard_integration
+```
+
+Os cenários cadastram pacientes e consultas pelo formulário real do Django Admin e verificam os indicadores operacionais e financeiros retornados pelo dashboard.
 
 ## Estrutura do projeto
 

@@ -1,0 +1,119 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agendamentos · OdontoClínica</title>
+  <link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'dashboard/appointments.css' %}">
+</head>
+<body>
+  {% include "dashboard/_sidebar.html" with active_page="agendamentos" %}
+
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumb">Agenda <span>/</span> Agendamentos</div>
+      <div class="top-actions"><span class="today">◷ &nbsp;{{ hoje|date:"d/m/Y" }}</span></div>
+    </header>
+
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">AGENDA DA CLÍNICA</p>
+        <h1>Novo agendamento</h1>
+        <p class="subtitle">Organize os atendimentos da clínica em um só lugar.</p>
+      </div>
+    </section>
+
+    {% if messages %}
+      <div class="appointment-messages" role="status">
+        {% for message in messages %}<p class="appointment-message {{ message.tags }}">{{ message }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="appointment-layout">
+      <section class="appointment-card">
+        <div class="appointment-card-heading">
+          <div class="appointment-icon">＋</div>
+          <div><h2>Dados da consulta</h2><p>Preencha as informações para reservar um horário.</p></div>
+        </div>
+
+        <form method="post" class="appointment-fields" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+          {% endif %}
+          <div class="appointment-field">
+            <label for="{{ form.paciente.id_for_label }}">{{ form.paciente.label }}</label>
+            {{ form.paciente }}
+            {% for error in form.paciente.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+          <div class="appointment-field">
+            <label for="{{ form.dentista.id_for_label }}">{{ form.dentista.label }}</label>
+            {{ form.dentista }}
+            {% for error in form.dentista.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+          <div class="appointment-field">
+            <label for="{{ form.data_hora.id_for_label }}">{{ form.data_hora.label }}</label>
+            {{ form.data_hora }}
+            {% for error in form.data_hora.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+          <div class="appointment-field">
+            <label for="{{ form.duracao_min.id_for_label }}">Duração (minutos)</label>
+            {{ form.duracao_min }}
+            {% for error in form.duracao_min.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+          <div class="appointment-field">
+            <label for="{{ form.valor.id_for_label }}">{{ form.valor.label }}</label>
+            {{ form.valor }}
+            {% for error in form.valor.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+          <div class="appointment-field appointment-field-wide">
+            <label for="{{ form.observacoes.id_for_label }}">{{ form.observacoes.label }}</label>
+            {{ form.observacoes }}
+            {% for error in form.observacoes.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+          </div>
+          <div class="appointment-form-actions appointment-field-wide">
+            <span>Os campos com paciente, profissional e horário são necessários.</span>
+            <button class="primary-button" type="submit"><span>✓</span> Salvar agendamento</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="appointment-aside">
+        <section class="appointment-summary">
+          <p class="eyebrow">CADASTROS DISPONÍVEIS</p>
+          <div class="summary-row"><span>Pacientes ativos</span><strong>{{ pacientes_ativos }}</strong></div>
+          <div class="summary-row"><span>Profissionais ativos</span><strong>{{ dentistas_ativos }}</strong></div>
+          {% if not pacientes_ativos or not dentistas_ativos %}
+            <p class="summary-help">Para agendar, é necessário ter ao menos um paciente e um profissional ativos cadastrados.</p>
+          {% endif %}
+        </section>
+
+        <section class="appointment-card upcoming-card">
+          <div class="appointment-card-heading">
+            <div><h2>Próximos atendimentos</h2><p>Consultas agendadas ou confirmadas.</p></div>
+          </div>
+          <div class="upcoming-list">
+            {% for consulta in proximas_consultas %}
+              <article class="upcoming-item">
+                <div class="upcoming-date"><strong>{{ consulta.data_hora|date:"d" }}</strong><span>{{ consulta.data_hora|date:"M" }}</span></div>
+                <div class="upcoming-copy">
+                  <strong>{{ consulta.paciente.nome }}</strong>
+                  <span>{{ consulta.data_hora|date:"d/m/Y · H:i" }}</span>
+                  <small>{{ consulta.dentista.nome }}</small>
+                </div>
+                <span class="status-pill status-{{ consulta.status|lower }}">{{ consulta.get_status_display }}</span>
+              </article>
+            {% empty %}
+              <p class="upcoming-empty">Ainda não há próximos atendimentos.</p>
+            {% endfor %}
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <footer>OdontoClínica <span>·</span> Gestão simples para cuidar melhor.</footer>
+  </main>
+</body>
+</html>

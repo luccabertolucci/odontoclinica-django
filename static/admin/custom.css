@@ -23,3 +23,39 @@
   font-size: 0.9rem;
   margin-bottom: 12px;
 }
+
+/* O Jazzmin não carrega o admin/css/base.css do Django, que define as variáveis
+   usadas pelo autocomplete (Select2). Sem elas, o campo fica sem borda/fundo. */
+:root {
+  --body-bg: #ffffff;
+  --body-fg: #212529;
+  --body-quiet-color: #6c757d;
+  --border-color: #ced4da;
+  --darkened-bg: #f8f9fa;
+  --selected-bg: #e9ecef;
+  --primary: #0d6efd;
+  --primary-fg: #ffffff;
+  --error-fg: #dc3545;
+}
+
+html[data-bs-theme="dark"] {
+  --body-bg: #212529;
+  --body-fg: #e9ecef;
+  --body-quiet-color: #adb5bd;
+  --border-color: #495057;
+  --darkened-bg: #2b3035;
+  --selected-bg: #343a40;
+  --primary: #0d6efd;
+  --primary-fg: #ffffff;
+  --error-fg: #f87171;
+}
+
+/* Altura do autocomplete alinhada aos demais campos do formulário. */
+.select2-container--admin-autocomplete .select2-selection--single,
+.select2-container--admin-autocomplete .select2-selection--multiple {
+  min-height: 38px;
+}
+
+.select2-container--admin-autocomplete .select2-selection--single .select2-selection__rendered {
+  line-height: 36px;
+}

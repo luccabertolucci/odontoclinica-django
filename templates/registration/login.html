@@ -1,0 +1,29 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar · OdontoClínica</title>
+  <link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'dashboard/appointments.css' %}">
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <a class="brand login-brand" href="{% url 'login' %}"><span class="brand-mark">✳</span><span>odonto<span class="brand-light">clínica</span><small>GESTÃO INTELIGENTE</small></span></a>
+    <p class="eyebrow">PORTAL DA CLÍNICA</p>
+    <h1>Acesse sua conta</h1>
+    <p class="subtitle">Entre para acompanhar a clínica e gerenciar agendamentos.</p>
+    {% if form.errors %}<p class="login-error" role="alert">Usuário ou senha inválidos. Confira seus dados e tente novamente.</p>{% endif %}
+    <form method="post" class="login-fields">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <label for="{{ form.username.id_for_label }}">Usuário</label>
+      {{ form.username }}
+      <label for="{{ form.password.id_for_label }}">Senha</label>
+      {{ form.password }}
+      <button class="primary-button" type="submit">Entrar</button>
+    </form>
+  </main>
+</body>
+</html>

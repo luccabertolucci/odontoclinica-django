@@ -18,14 +18,14 @@ class Consulta(models.Model):
     )
     dentista = models.ForeignKey(
         Dentista,
-        verbose_name="dentista",
+        verbose_name="Dentista",
         on_delete=models.PROTECT,
         related_name="consultas",
     )
-    data_hora = models.DateTimeField("data e hora")
+    data_hora = models.DateTimeField("Data e hora")
     duracao_min = models.PositiveIntegerField("duração (min)", default=30)
     status = models.CharField(
-        "status",
+        "Status",
         max_length=20,
         choices=Status.choices,
         default=Status.AGENDADA,

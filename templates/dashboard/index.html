@@ -1,0 +1,59 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard · OdontoClínica</title>
+  <link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
+</head>
+<body>
+  {% include "dashboard/_sidebar.html" with active_page="dashboard" %}
+
+  <main class="main">
+    <header class="topbar"><div class="breadcrumb">Visão geral <span>/</span> Dashboard</div><div class="top-actions"><span class="today">◷ &nbsp;{{ hoje|date:"d/m/Y" }}</span></div></header>
+    <section class="page-heading"><div><p class="eyebrow">PAINEL DE CONTROLE</p><h1>Bom dia, {{ request.user.first_name|default:request.user.username }} <span class="wave">✦</span></h1><p class="subtitle">Acompanhe o que está acontecendo na sua clínica.</p></div><a class="primary-button" href="{% url 'agendamentos' %}"><span>＋</span> Novo agendamento</a></section>
+
+    <nav class="dashboard-switch" aria-label="Tipo de dashboard"><a class="switch-item selected" href="#operacional" data-panel="operacional"><span>▦</span> Visão geral</a><a class="switch-item" href="#financeiro" data-panel="financeiro"><span>◉</span> Financeiro</a></nav>
+
+    <section id="operacional" class="dashboard-panel">
+      <div class="section-heading"><div><h2>Visão geral</h2><p>Resumo da operação em {{ mes_nome }}.</p></div><span class="period-pill">● &nbsp;{{ mes_nome }} {{ hoje|date:"Y" }}</span></div>
+      <div class="metric-grid">
+        <article class="metric-card"><div class="metric-top"><span>Consultas no mês</span><span class="metric-icon mint">▣</span></div><strong>{{ total_mes }}</strong><div class="metric-note">Agendamentos registrados</div></article>
+        <article class="metric-card"><div class="metric-top"><span>Realizadas</span><span class="metric-icon blue">✓</span></div><strong>{{ realizadas_mes }}</strong><div class="metric-note">Atendimentos concluídos</div></article>
+        <article class="metric-card"><div class="metric-top"><span>Cancelamentos</span><span class="metric-icon coral">↘</span></div><strong>{{ cancelamentos }}</strong><div class="metric-note">Neste mês</div></article>
+        <article class="metric-card"><div class="metric-top"><span>Média por dia útil</span><span class="metric-icon violet">◷</span></div><strong>{{ media_diaria }}</strong><div class="metric-note">Consultas agendadas</div></article>
+      </div>
+      <div class="content-grid">
+        <article class="panel chart-panel"><div class="panel-heading"><div><h3>Ritmo de atendimentos</h3><p>Volume de consultas nos últimos 6 meses</p></div><span class="legend"><i></i> Consultas</span></div><div class="chart-wrap"><canvas id="appointmentsChart" aria-label="Consultas nos últimos seis meses"></canvas></div></article>
+        <article class="panel"><div class="panel-heading"><div><h3>Status das consultas</h3><p>Distribuição deste mês</p></div></div><div class="donut-area"><div class="donut" id="statusDonut"><div><strong id="donutTotal">{{ total_mes }}</strong><span>consultas</span></div></div><div class="legend-list" id="statusLegend"></div></div></article>
+      </div>
+      <div class="content-grid lower-grid">
+        <article class="panel"><div class="panel-heading"><div><h3>Horários mais procurados</h3><p>Consultas por hora de início · {{ mes_nome }}</p></div></div><div class="chart-wrap short"><canvas id="hoursChart" aria-label="Consultas por hora"></canvas></div></article>
+        <article class="panel"><div class="panel-heading"><div><h3>Pacientes recorrentes</h3><p>Quem mais voltou à clínica</p></div><span class="subtle-icon">↻</span></div><div class="patient-list">{% for item in recorrentes %}<div class="patient-row"><span class="patient-avatar avatar-{{ forloop.counter }}">{{ item.paciente__nome|first|upper }}</span><span class="patient-name">{{ item.paciente__nome }}</span><span class="visit-count">{{ item.total }} consultas</span></div>{% empty %}<div class="empty-state">Ainda não há pacientes com mais de uma consulta registrada.</div>{% endfor %}</div></article>
+      </div>
+      <article class="next-appointment"><div class="next-icon">◷</div><div class="next-copy"><span>PRÓXIMO ATENDIMENTO</span>{% if proxima %}<strong>{{ proxima.paciente.nome }}</strong><small>{{ proxima.data_hora|date:"d/m · H:i" }} &nbsp;·&nbsp; {{ proxima.dentista.nome }}</small>{% else %}<strong>Agenda tranquila por enquanto</strong><small>Nenhuma consulta futura confirmada.</small>{% endif %}</div><a href="{% url 'agendamentos' %}">Ver agenda <span>→</span></a></article>
+    </section>
+
+    <section id="financeiro" class="dashboard-panel" hidden>
+      <div class="section-heading"><div><h2>Visão financeira</h2><p>Receitas registradas e oportunidades da agenda em {{ mes_nome }}.</p></div><span class="period-pill">● &nbsp;{{ mes_nome }} {{ hoje|date:"Y" }}</span></div>
+      <div class="metric-grid">
+        <article class="metric-card"><div class="metric-top"><span>Faturamento realizado</span><span class="metric-icon mint">R$</span></div><strong class="currency">R$ {{ faturamento_mes|floatformat:2 }}</strong><div class="metric-note">Consultas marcadas como realizadas</div></article>
+        <article class="metric-card"><div class="metric-top"><span>Receita na agenda</span><span class="metric-icon blue">◷</span></div><strong class="currency">R$ {{ receita_prevista|floatformat:2 }}</strong><div class="metric-note">Valor previsto em consultas futuras</div></article>
+        <article class="metric-card"><div class="metric-top"><span>Ticket médio realizado</span><span class="metric-icon violet">◈</span></div><strong class="currency">R$ {{ ticket_medio|floatformat:2 }}</strong><div class="metric-note">Média por consulta realizada</div></article>
+        <article class="metric-card"><div class="metric-top"><span>Profissional em destaque</span><span class="metric-icon coral">✦</span></div><strong class="dentist-value">{% if maior_dentista %}{{ maior_dentista.dentista__nome }}{% else %}—{% endif %}</strong><div class="metric-note">{% if maior_dentista %}Maior faturamento realizado{% else %}Sem consultas realizadas{% endif %}</div></article>
+      </div>
+      <div class="content-grid finance-grid">
+        <article class="panel chart-panel"><div class="panel-heading"><div><h3>Evolução do faturamento</h3><p>Valores de consultas realizadas nos últimos 6 meses</p></div><span class="legend revenue-legend"><i></i> Faturamento</span></div><div class="chart-wrap"><canvas id="revenueChart" aria-label="Faturamento nos últimos seis meses"></canvas></div></article>
+        <article class="panel insight-panel"><div class="insight-mark">✦</div><div class="eyebrow">DESTAQUE DO MÊS</div><h3>{% if melhor_horario %}Faixa com maior faturamento{% else %}Acompanhe os melhores horários{% endif %}</h3><p>{% if melhor_horario %}Consultas realizadas com início às {{ melhor_horario.hora|stringformat:'02d' }}h somaram <b>R$ {{ melhor_horario.total|floatformat:2 }}</b> em {{ melhor_horario.consultas }} atendimento(s).{% else %}Assim que houver consultas realizadas e registradas, este painel mostrará a faixa horária que mais faturou.{% endif %}</p><a href="#operacional" data-goto="operacional">Ver horários populares <span>→</span></a></article>
+      </div>
+      <article class="finance-note"><span>ⓘ</span><p>O faturamento considera apenas consultas marcadas como <b>Realizadas</b>. A receita na agenda soma consultas agendadas e confirmadas. O sistema ainda não registra pagamentos ou despesas.</p></article>
+    </section>
+    <footer>OdontoClínica <span>·</span> Gestão simples para cuidar melhor.</footer>
+  </main>
+  {{ tendencia|json_script:"monthly-data" }}
+  {{ status_chart|json_script:"status-data" }}
+  {{ horarios|json_script:"hours-data" }}
+  <script src="{% static 'dashboard/dashboard.js' %}"></script>
+</body>
+</html>
